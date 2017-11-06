@@ -1,0 +1,40 @@
+#packopt name "bmpsep"
+#packopt runtime "hsp3cl.hrt"
+#runtime "hsp3cl"
+sdim fname:dim fsize:sdim sdummy:sdummy=""
+fname=dirinfo(4)
+dirlist list,fname,0
+if stat==0:print "ファイルが存在しません。":goto *exit
+
+exist fname
+if stat==-1:print "ファイルの容量が大きすぎます。":goto *exit
+if stat==0:print "ファイルは空です。。":goto *exit
+fsize=strsize
+
+sdim fbuf,fsize
+bload fname,fbuf,fsize,0
+dim count:sdim stemp:dim bmpos:dim outsize
+sdim fn
+fn="":count=0:bmpos=-1
+notesel sdummy
+repeat fsize-1
+	memcpy stemp,fbuf,2,0,cnt
+	if bmpos!=-1{
+		if stemp=="BM"{
+			outsize=cnt-bmpos
+			fn=strf(dirinfo(0)+"\\out_%03d.bmp",count)
+			notesave fn
+			sdim outputbin,outsize
+			memcpy outputbin,fbuf,outsize,0,bmpos
+			bsave fn,outputbin,outsize,0
+			sdim outputbin,0
+			outsize=0
+			bmpos=-1
+			count++
+		}
+	}else{
+		if stemp=="BM":bmpos=cnt
+	}
+loop
+*exit
+	end
